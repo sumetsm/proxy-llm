@@ -51,22 +51,146 @@ Double-click **`stop-llm.bat`** to cleanly shut down Ollama, ngrok, and the prox
 
 ## Making requests
 
-Use the ngrok public URL as the base URL and add the API key header.
+Use the ngrok public URL as the base URL and include the header `X-Api-Key: my-secret-key-123` on every request.
 
-**Example — list local models:**
+---
+
+### List available models
 
 ```bash
 curl https://xxxx.ngrok-free.app/api/tags \
   -H "X-Api-Key: my-secret-key-123"
 ```
 
-**Example — chat completion:**
+---
+
+### Chat completion
 
 ```bash
 curl https://xxxx.ngrok-free.app/api/chat \
   -H "X-Api-Key: my-secret-key-123" \
   -H "Content-Type: application/json" \
-  -d '{"model": "llama3", "messages": [{"role": "user", "content": "Hello!"}]}'
+  -d '{
+    "model": "llama3",
+    "messages": [
+      {"role": "user", "content": "Hello, who are you?"}
+    ]
+  }'
+```
+
+Multi-turn conversation (pass the full message history):
+
+```bash
+curl https://xxxx.ngrok-free.app/api/chat \
+  -H "X-Api-Key: my-secret-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3",
+    "messages": [
+      {"role": "user",      "content": "What is the capital of France?"},
+      {"role": "assistant", "content": "The capital of France is Paris."},
+      {"role": "user",      "content": "What is it famous for?"}
+    ]
+  }'
+```
+
+---
+
+### Generate (raw completion)
+
+```bash
+curl https://xxxx.ngrok-free.app/api/generate \
+  -H "X-Api-Key: my-secret-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3",
+    "prompt": "Explain quantum computing in simple terms.",
+    "stream": false
+  }'
+```
+
+---
+
+### Generate embeddings
+
+```bash
+curl https://xxxx.ngrok-free.app/api/embed \
+  -H "X-Api-Key: my-secret-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nomic-embed-text",
+    "input": "The quick brown fox jumps over the lazy dog"
+  }'
+```
+
+---
+
+### Pull a model
+
+```bash
+curl https://xxxx.ngrok-free.app/api/pull \
+  -H "X-Api-Key: my-secret-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "mistral"}'
+```
+
+---
+
+### Delete a model
+
+```bash
+curl -X DELETE https://xxxx.ngrok-free.app/api/delete \
+  -H "X-Api-Key: my-secret-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "mistral"}'
+```
+
+---
+
+### Python example
+
+```python
+import requests
+
+BASE_URL = "https://xxxx.ngrok-free.app"
+HEADERS = {
+    "X-Api-Key": "my-secret-key-123",
+    "Content-Type": "application/json",
+}
+
+response = requests.post(
+    f"{BASE_URL}/api/chat",
+    headers=HEADERS,
+    json={
+        "model": "llama3",
+        "messages": [{"role": "user", "content": "Tell me a joke."}],
+    },
+)
+print(response.json()["message"]["content"])
+```
+
+---
+
+### JavaScript / fetch example
+
+```js
+const BASE_URL = "https://xxxx.ngrok-free.app";
+const API_KEY = "my-secret-key-123";
+
+const res = await fetch(`${BASE_URL}/api/chat`, {
+  method: "POST",
+  headers: {
+    "X-Api-Key": API_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "llama3",
+    messages: [{ role: "user", content: "Tell me a joke." }],
+  }),
+});
+
+const data = await res.json();
+console.log(data.message.content);
 ```
 
 ## Configuration
